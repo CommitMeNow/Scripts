@@ -1,0 +1,32 @@
+
+#***Tautulli **********************************************
+#Used for Plex monitoring
+
+docker pull tautulli/tautulli
+docker stop tautulli
+docker rm container tautulli
+docker create --name=tautulli -v /volume1/docker/tautulli:/config -e TZ=America/Chicago -p 32700:8181 tautulli/tautulli
+docker start tautulli
+
+#**********************************************************
+
+#***Macvlan network creation for ad guard******************
+#Build network for custom MacVlan bridge and DNS on Synology NAS. Point downstream DNS to a custom vlan, setup secondary dns on router as something else in case adguard container is down
+#Initial Setup of the Neworks. Only need to run again if the networks are completely removed and/or IP/subnets need to be changed
+
+docker network create -d macvlan -o parent=eth0 --subnet=192.168.81.0/24 --gateway=192.168.81.1 --ip-range=192.168.81.201/32 adguard_network
+docker network create -d bridge -o parent=eth0 --subnet=192.168.82.0/24 --gateway=192.168.82.1 --ip-range=192.168.82.2/32 adguard_bridge
+
+#**********************************************************
+
+#***AD Guard**********************************************
+#Ad blocking container
+
+docker pull adguard/adguardhome
+docker stop adguard
+docker rm adguard
+docker create --name=adguard --restart=always --network=adguard_network -v /volume1/docker/adguard/data:/opt/adguardhome/work/data -v /volume1/docker/adguard/conf:/opt/adguardhome/conf -p 53:53/tcp -p 53:53/udp -p 8282:8282/tcp -p 3000:3000/tcp adguard/adguardhome
+docker network connect adguard_bridge adguard
+docker start adguard
+
+**********************************************************

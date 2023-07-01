@@ -8,7 +8,7 @@
 #As written, the code will remove BOTH resource group and subscription-level assignments. Adjust the code as needed to ignore subscription-level assignments. 
 #This code is provided AS IS and as an example only. 
 #
-# Published at: https://techcommunity.microsoft.com/t5/azure-tools-blog/use-powershell-to-remove-lighthouse-delegations-based-on/ba-p/3741542
+# Published by Andrew Schwalbe at: https://techcommunity.microsoft.com/t5/azure-tools-blog/use-powershell-to-remove-lighthouse-delegations-based-on/ba-p/3741542
 ###############################################################
 Param (
     [Parameter()]
@@ -17,7 +17,7 @@ Param (
 
     [Parameter()]
     [String]
-    $inputFile = "InputSubscriptionIds.txt"
+    $inputFile = "InputSubscriptionIds.txt"  #Basic text file with a new subscription ID on each line
 )
 [String[]] $subscrpitionIDs
 try {

@@ -1,3 +1,6 @@
+# Contains docker commands you can use on Synology NAS or any Docker environment for building:
+#   Tautuli container for Plex monitoring and 
+#   AD Guard ad blocking for your home network.  This requires creating a separate network to manage DNS.  
 
 #***Tautulli **********************************************
 #Used for Plex monitoring
@@ -10,7 +13,8 @@ docker start tautulli
 
 #**********************************************************
 
-#***Macvlan network creation for ad guard******************
+
+#***Macvlan network creation for AD Guard******************
 #Build network for custom MacVlan bridge and DNS on Synology NAS. Point downstream DNS to a custom vlan, setup secondary dns on router as something else in case adguard container is down
 #Initial Setup of the Neworks. Only need to run again if the networks are completely removed and/or IP/subnets need to be changed
 
@@ -20,7 +24,7 @@ docker network create -d bridge -o parent=eth0 --subnet=192.168.82.0/24 --gatewa
 #**********************************************************
 
 #***AD Guard**********************************************
-#Ad blocking container
+#AD blocking container
 
 docker pull adguard/adguardhome
 docker stop adguard

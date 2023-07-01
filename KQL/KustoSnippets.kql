@@ -1,0 +1,8 @@
+//This query will capture traffic information in bytes between two AKS Clusters using CNI, on separate VNETS.  This requires implementation 
+//of NGS Logs within Network Watcher.  Between clsuters 01 and 02 filter by IP address ranges. 
+//10.3.0.18 is a node in AKS cluster 1,  10.4.0.128 is a node in a different AKS cluster in a separate Vnet.
+AzureNetworkAnalytics_CL
+| where SrcIP_s contains "10.3" and DestIP_s contains "10.4"
+| project TimeGenerated, SrcIP_s, DestIP_s, DestPort_d, L7Protocol_s, InboundBytes_d, OutboundBytes_d
+| summarize count(), InboundToAKS02 = format_bytes(sum(InboundBytes_d)), OutboundFromAKS02 = format_bytes(sum(OutboundBytes_d))
+

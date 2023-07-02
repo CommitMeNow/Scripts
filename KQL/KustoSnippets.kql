@@ -6,3 +6,20 @@ AzureNetworkAnalytics_CL
 | project TimeGenerated, SrcIP_s, DestIP_s, DestPort_d, L7Protocol_s, InboundBytes_d, OutboundBytes_d
 | summarize count(), InboundToAKS02 = format_bytes(sum(InboundBytes_d)), OutboundFromAKS02 = format_bytes(sum(OutboundBytes_d))
 
+
+//List VMSS instances with timeCreated and age in days for all kinds of VMSS like Regular and Spot.
+resources
+| where type == "microsoft.compute/virtualmachinescalesets"
+| extend timeCreated = todatetime(properties.timeCreated), orchMode = properties.orchestrationMode, vmKind=iif(tostring(properties.virtualMachineProfile.priority) == 'Spot', 'Spot', 'OnDemand')
+| extend ageInDays = toint(format_timespan(now() - timeCreated, 'd'))
+| project subscriptionId, resourceGroup, name, timeCreated, ageInDays, orchMode, vmKind
+| sort by ageInDays desc
+
+//List VM instances with timeCreated and age in days for all kinds of VM like Regular and Spot.
+resources
+| where type == "microsoft.compute/virtualmachines"
+| extend timeCreated = todatetime(properties.timeCreated)
+| extend ageInDays = toint(format_timespan(now() - timeCreated, 'd'))
+| project subscriptionId, resourceGroup, name, vmKind=properties.priority, timeCreated, ageInDays
+| sort by ageInDays desc
+

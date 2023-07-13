@@ -6,3 +6,39 @@ AzureNetworkAnalytics_CL
 | project TimeGenerated, SrcIP_s, DestIP_s, DestPort_d, L7Protocol_s, InboundBytes_d, OutboundBytes_d
 | summarize count(), InboundToAKS02 = format_bytes(sum(InboundBytes_d)), OutboundFromAKS02 = format_bytes(sum(OutboundBytes_d))
 
+
+//
+//These queries are on workspaces in seprate regions used for azure virtual machines that contain the table called "Update" and "VMProcess"
+//
+union workspace("myworkspace00").Update,
+workspace ("myworkspace01").Update
+| where OSType != "Linux" and UpdateState == "Needed"
+| project SubscriptionId, Computer 
+
+union kind=inner workspace("myworkspace00").Update,
+workspace ("myworkspace01").VMProcess
+//| distinct Computer
+
+let workspace1 = workspace("myworkspace00").Update;
+let workspace2 = workspace ("myworkspace01").Update;
+workspace1
+| join kind = leftouter workspace2
+on $left.Title == $right.Title
+| distinct Computer, Title  
+
+let workspace1 = workspace("myworkspace00").VMProcess;
+let workspace2 = workspace ("myworkspace01").VMProcess;
+workspace1
+| join kind = leftouter workspace2
+on $left.Process == $right.Process
+| distinct DisplayName 
+
+//
+//cross application insights query
+union app("appi-simplehttptrigger-dev-001").requests, app ("appi-LoadTestAppService01").requests
+| where timestamp > ago(200h)
+| where duration > 5 and duration < 15
+| render piechart  
+
+//https://learn.microsoft.com/en-us/azure/azure-monitor/logs/cross-workspace-query
+

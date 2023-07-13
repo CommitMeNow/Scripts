@@ -42,3 +42,20 @@ union app("appi-simplehttptrigger-dev-001").requests, app ("appi-LoadTestAppServ
 
 //https://learn.microsoft.com/en-us/azure/azure-monitor/logs/cross-workspace-query
 
+
+//List VMSS instances with timeCreated and age in days for all kinds of VMSS like Regular and Spot.
+resources
+| where type == "microsoft.compute/virtualmachinescalesets"
+| extend timeCreated = todatetime(properties.timeCreated), orchMode = properties.orchestrationMode, vmKind=iif(tostring(properties.virtualMachineProfile.priority) == 'Spot', 'Spot', 'OnDemand')
+| extend ageInDays = toint(format_timespan(now() - timeCreated, 'd'))
+| project subscriptionId, resourceGroup, name, timeCreated, ageInDays, orchMode, vmKind
+| sort by ageInDays desc
+
+//List VM instances with timeCreated and age in days for all kinds of VM like Regular and Spot.
+resources
+| where type == "microsoft.compute/virtualmachines"
+| extend timeCreated = todatetime(properties.timeCreated)
+| extend ageInDays = toint(format_timespan(now() - timeCreated, 'd'))
+| project subscriptionId, resourceGroup, name, vmKind=properties.priority, timeCreated, ageInDays
+| sort by ageInDays desc
+

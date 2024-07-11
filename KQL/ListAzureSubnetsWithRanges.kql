@@ -1,0 +1,10 @@
+//List all subnets in your azure tenant across all subscriptions and return the subnet name, subscription name, and subunet range / subnet mask
+resources
+| where type == "microsoft.network/virtualnetworks"
+| project subscriptionId, name, properties['subnets']
+| mv-expand properties_subnets   //This is needed to account for networks that have more than one subnet
+| extend SubnetRange = extract(@"\d+.\d+.\d+.\d+\W\d+", 0, tostring(properties_subnets))  //using Regex mask here due to how subnet properties may return differently
+| extend VnetName = name
+| extend SubNetName = properties_subnets.name
+| project subscriptionId, VnetName, SubNetName, SubnetRange
+| order by SubnetRange asc 
